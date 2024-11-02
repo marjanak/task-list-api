@@ -28,12 +28,21 @@ def create_task():
 
 @tasks_bp.get("")
 def get_all_tasks():
-    query = db.select(Task).order_by(Task.id)
+    
+    query = db.select(Task)
+    sorted_title = request.args.get("sort")
+    if sorted_title == "desc":
+        query = query.order_by(Task.title.desc())
+    else:
+        query = query.order_by(Task.title.asc())
+                            
     tasks = db.session.scalars(query)
 
-    tasks_response = [task.to_dict() for task in tasks]
+    tasks_response =([task.to_dict() for task in tasks],200)
+    
     return tasks_response
 
+    
 @tasks_bp.get("/<task_id>")
 def get_single_task(task_id):
     task = validate_task(task_id)
