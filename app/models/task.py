@@ -7,12 +7,16 @@ class Task(db.Model):
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     title : Mapped[str]
     description : Mapped [str]
-    completed_at: Mapped[Optional[datetime]] = mapped_column(nullable=True)
-
+    completed_at: Mapped[Optional[datetime]] 
     def to_dict(self):
+        is_complete_task= False
+        if self.completed_at:
+            is_complete_task = True
+        
         return dict(
             id=self.id,
             title=self.title,
             description=self.description,
-            is_complete=False
+            is_complete=is_complete_task
         )
+   
