@@ -2,7 +2,9 @@ from flask import Blueprint,request,abort,make_response,Response
 from app.models.task import Task
 from ..db import db
 from datetime import date
-
+import os
+import requests
+from .route_utilities import validate_model
 
 tasks_bp = Blueprint("tasks_bp",__name__, url_prefix="/tasks")
 
@@ -10,16 +12,22 @@ tasks_bp = Blueprint("tasks_bp",__name__, url_prefix="/tasks")
 def create_task():
     request_body = request.get_json()
 
+    #try:
+        #new_task = Task.from_dict(request_body)
+        #response ={"task" : new_task.to_dict()}
+        #return response,201 
+    #except KeyError as error:
+        #response = {"details":f"Invalid data"}
+        #abort(make_response(response,400))
+
     if not "title" in request_body:
         return ({"details": "Invalid data"},400)
     elif not "description" in request_body:
         return ({"details": "Invalid data"},400)
     else:
-        title = request_body["title"]
-        description = request_body["description"]
-        completed_at = None
-    
-        new_task = Task(title=title, description=description, completed_at=None)
+       
+        new_task = Task.from_dict(request_body)
+
     
         db.session.add(new_task)
         db.session.commit()
@@ -47,13 +55,13 @@ def get_all_tasks():
     
 @tasks_bp.get("/<task_id>")
 def get_single_task(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
 
     return {"task" : task.to_dict()}
 
 @tasks_bp.put("/<task_id>")
 def update_task(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
     request_body = request.get_json()
 
     task.title = request_body["title"]
@@ -65,7 +73,7 @@ def update_task(task_id):
 
 @tasks_bp.delete("/<task_id>")
 def delete_task(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
 
     db.session.delete(task)
     db.session.commit()
@@ -76,40 +84,33 @@ def delete_task(task_id):
     }
 @tasks_bp.patch("/<task_id>/mark_complete")
 def partial_update_complete_one_task(task_id):
-    task = validate_task(task_id)
+    task = validate_model(Task, task_id)
     
     task.completed_at = date.today()
     
     db.session.add(task)
     db.session.commit()
+
+    message = f"Someone just completed the task My Beautiful {task.title}"
+    SLACK_AUTHENTICATION=os.environ.get("SLACK_AUTHENTICATION")
+    slack_response = requests.post(f"https://slack.com/api/chat.postMessage?channel=api-test-channel&text={message}",headers = {"Authorization":f"Bearer {os.environ.get("SLACK_AUTHENTICATION")}"})
     
+   
     return {"task":task.to_dict()}
 
 @tasks_bp.patch("/<task_id>/mark_incomplete")
 def partial_update_incomplete_task(task_id):
-    task= validate_task(task_id)
+    task= validate_model(Task, task_id)
 
     task.completed_at = None
 
     db.session.add(task)
-    db.session.commit()
-
+    db.session.commit()                 
+    
     return {"task":task.to_dict()}
 
 
-def validate_task(task_id):
-    try:
-        task_id = int(task_id)
-    except:
-        abort(make_response({"message":f"Task {task_id} is invalid, 400"}))
 
-    query = db.select(Task).where(Task.id == task_id)
-    task = db.session.scalar(query)
-  
-    if not task:
-        abort(make_response({"message":f"Task {task_id} is not found, 404"},404))
-       
-    return task 
 
     
              
