@@ -12,7 +12,6 @@ class Task(db.Model):
     goal_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goal.id"))
     goal : Mapped[Optional["Goal"]] = relationship(back_populates="tasks")
 
-
     def to_dict(self):
         is_complete_task= False
         if self.completed_at:
@@ -29,8 +28,6 @@ class Task(db.Model):
             task_dict["goal_id"] = self.goal.id
             
         return task_dict
-
-
         
     @classmethod
     def from_dict(cls, task_data):

@@ -11,17 +11,18 @@ bp = Blueprint("goals_bp", __name__, url_prefix="/goals")
 def create_goal():
     request_body = request.get_json()
 
-    if not "title" in request_body:
-        return ({"details": "Invalid data"},400)
-    else:
+    try:
         new_goal = Goal.from_dict(request_body)
-
+     
+    except KeyError as error:
+        response = {"details":f"Invalid data"}
+        abort(make_response(response,400))
     
-        db.session.add(new_goal)
-        db.session.commit()
+    db.session.add(new_goal)
+    db.session.commit()
 
-        response = {"goal" : new_goal.to_dict()}
-        return response,201
+    response = {"goal" : new_goal.to_dict()}
+    return response,201
     
 @bp.get("")
 def get_all_goals():
@@ -63,7 +64,6 @@ def delete_goal(goal_id):
     db.session.commit()
 
     return {
-
         "details": 'Goal 1 "Build a habit of going outside daily" successfully deleted'
     }
 
