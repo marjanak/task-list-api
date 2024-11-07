@@ -12,29 +12,20 @@ tasks_bp = Blueprint("tasks_bp",__name__, url_prefix="/tasks")
 def create_task():
     request_body = request.get_json()
 
-    #try:
-        #new_task = Task.from_dict(request_body)
-        #response ={"task" : new_task.to_dict()}
-        #return response,201 
-    #except KeyError as error:
-        #response = {"details":f"Invalid data"}
-        #abort(make_response(response,400))
-
-    if not "title" in request_body:
-        return ({"details": "Invalid data"},400)
-    elif not "description" in request_body:
-        return ({"details": "Invalid data"},400)
-    else:
-       
+    try:
         new_task = Task.from_dict(request_body)
+     
+    except KeyError as error:
+        response = {"details":f"Invalid data"}
+        abort(make_response(response,400))
 
-    
-        db.session.add(new_task)
-        db.session.commit()
 
-        response = {"task" : new_task.to_dict()}
+    db.session.add(new_task)
+    db.session.commit()
 
-        return response,201
+    response = {"task" : new_task.to_dict()}
+
+    return response,201
 
 @tasks_bp.get("")
 def get_all_tasks():
@@ -82,6 +73,7 @@ def delete_task(task_id):
 
         "details": 'Task 1 "Go on my daily walk 🏞" successfully deleted'
     }
+
 @tasks_bp.patch("/<task_id>/mark_complete")
 def partial_update_complete_one_task(task_id):
     task = validate_model(Task, task_id)
@@ -92,8 +84,8 @@ def partial_update_complete_one_task(task_id):
     db.session.commit()
 
     message = f"Someone just completed the task My Beautiful {task.title}"
-    SLACK_AUTHENTICATION=os.environ.get("SLACK_AUTHENTICATION")
-    slack_response = requests.post(f"https://slack.com/api/chat.postMessage?channel=api-test-channel&text={message}",headers = {"Authorization":f"Bearer {os.environ.get("SLACK_AUTHENTICATION")}"})
+   
+    slack_response = requests.post (f"https://slack.com/api/chat.postMessage?channel=C07V6E62DS7&text={message}", headers = {"Authorization":f"Bearer {os.environ.get("SLACK_AUTHENTICATION")}"})
     
    
     return {"task":task.to_dict()}
