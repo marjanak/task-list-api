@@ -51,7 +51,7 @@ def update_goal(goal_id):
     goal = validate_model(Goal, goal_id)
     request_body = request.get_json()
 
-    new_goal = Goal.from_dict(request_body)
+    goal.title = request_body["title"]
    
     db.session.commit()
     return {"goal" : goal.to_dict()}
