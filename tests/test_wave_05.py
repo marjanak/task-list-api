@@ -100,6 +100,13 @@ def test_update_goal(client, one_goal):
     # ---- Complete Assertions Here ----
     assert response.status_code == 200
     assert "goal" in response_body
+    assert response_body == {
+        "goal": {
+            "id": 1,
+            "title": "Updated Goal Title"
+        }
+    }
+
     
 #@pytest.mark.skip(reason="test to be completed by student")
 def test_update_goal_not_found(client):
