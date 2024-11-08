@@ -85,7 +85,7 @@ def partial_update_complete_one_task(task_id):
 
     message = f"Someone just completed the task My Beautiful {task.title}"
    
-    slack_response = requests.post (f"https://slack.com/api/chat.postMessage?channel=C07V6E62DS7&text={message}",headers = {"Authorization":f"Bearer {os.environ.get("SLACK_AUTHENTICATION")}"})
+    slack_response = requests.post (f"https://slack.com/api/chat.postMessage?channel=C07V6E62DS7&text={message}",headers = {"Authorization":f"Bearer {os.environ.get('SLACK_AUTHENTICATION')}"})
     
    
     return {"task":task.to_dict()}
