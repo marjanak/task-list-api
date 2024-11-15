@@ -69,10 +69,7 @@ def delete_task(task_id):
     db.session.delete(task)
     db.session.commit()
 
-    return {
-
-        "details": 'Task 1 "Go on my daily walk 🏞" successfully deleted'
-    }
+    return {"details": f'Task {task_id} "{task.title}" successfully deleted'}
 
 @tasks_bp.patch("/<task_id>/mark_complete")
 def partial_update_complete_one_task(task_id):
